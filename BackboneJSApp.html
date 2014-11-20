@@ -19,6 +19,8 @@ table tr {
 <body>
   <table id="table">
   </table>
+  <br>
+  <p>Total: <span id="totalPrice"></span></p>
   <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="http://jashkenas.github.io/underscore/underscore-min.js"></script>
   <script src="http://jashkenas.github.io/backbone/backbone-min.js"></script>
@@ -90,19 +92,36 @@ table tr {
       })
       ]);
 
+      var AppModel = Backbone.Model.extend({
+        default:{
+          total:0
+        }
+      });
+
       var App = Backbone.View.extend({
-        initialize: function() {
+        render: function() {
           var table = $("#table");
           listOfStoreItems.each(function(model) {
             var view = new storeItemView({
               model: model
             });
             table.append(view.render().el);
+            this.listenTo(model, 'change', this.calculatePrice);
           }, this);
-        }
+        },
+        calculatePrice: function() {
+          var totalPrice = 0;
+          listOfStoreItems.each(function(model){
+            var isSelected = model.get("isSelected");
+            if(isSelected === true)
+              totalPrice += model.get("price");
+            }, this);
+            this.model.set("total", totalPrice);
+            $("#totalPrice").html(this.model.get("total"));
+          }
       });
 
-      new App();
+      new App({model: new AppModel({total: 0})}).render();
     });
   </script>
 </body>
