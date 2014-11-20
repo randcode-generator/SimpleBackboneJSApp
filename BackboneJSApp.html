@@ -1,0 +1,74 @@
+<html>
+
+<head>
+<style>
+table {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+table td {
+  width: 60px;
+  border: 1px solid black;
+}
+table tr {
+  border: 1px solid black;
+}
+</style>
+</head>
+
+<body>
+  <table id="table">
+  </table>
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="http://jashkenas.github.io/underscore/underscore-min.js"></script>
+  <script src="http://jashkenas.github.io/backbone/backbone-min.js"></script>
+  <script>
+  $(function() {
+    var storeItemModel = Backbone.Model.extend({
+      default: {
+        name: "default",
+        price: 0.0
+      }
+    });
+
+    var storeItemView = Backbone.View.extend({
+      render: function() {
+        return "<tr><td>" +
+        this.model.get('name') +
+        "</td></tr>";
+      }
+    });
+
+    var storeItemCollection = Backbone.Collection.extend({
+      model: storeItemModel
+    });
+
+    var listOfStoreItems = new storeItemCollection([
+      new storeItemModel({
+        name: "towels",
+        price: 10.99
+      }),
+      new storeItemModel({
+        name: "toys",
+        price: 7.99
+      })
+      ]);
+
+      var App = Backbone.View.extend({
+        initialize: function() {
+          var table = $("#table");
+          listOfStoreItems.each(function(model) {
+            var view = new storeItemView({
+              model: model
+            });
+            table.append(view.render());
+          }, this);
+        }
+      });
+
+      new App();
+    });
+  </script>
+</body>
+
+</html>
