@@ -41,7 +41,8 @@ table tr {
         //Remember, the <tr> is already included
         //because we specified 'tr' in tagName
         this.$el.html("<td><div>" +
-        this.model.get('name') +
+        this.model.get('name') + "<br>" +
+        this.model.get('price') +
         "</div></td>");
 
         return this;
