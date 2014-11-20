@@ -26,13 +26,14 @@ table tr {
     </td>
   </script>
   </script>
-  <table id="table">
-  </table>
+  <div id="tableid">
+  </div>
   <br>
   <p>Total: <span id="totalPrice"></span></p>
   <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="http://jashkenas.github.io/underscore/underscore-min.js"></script>
   <script src="http://jashkenas.github.io/backbone/backbone-min.js"></script>
+  <script src="http://marionettejs.com/downloads/backbone.marionette.min.js"></script>
   <script>
   $(function() {
     var storeItemModel = Backbone.Model.extend({
@@ -43,37 +44,36 @@ table tr {
       }
     });
 
-    var storeItemView = Backbone.View.extend({
+    var storeItemView = Backbone.Marionette.ItemView.extend({
       tagName: 'tr',
-      initialize: function() {
-        this.listenTo(this.model, 'change', this.render);
+      modelEvents: {
+        'change': 'modelChanged'
       },
+      template: "#table-row-template",
       events: {
         'mouseenter': 'mouseEntered',
         'mouseleave': 'mouseleft',
         'click': 'clicked'
       },
-      render: function() {
-        //Remember, the <tr> is already included
-        //because we specified 'tr' in tagName
-        var data = {name: this.model.get('name'), price: this.model.get('price')};
-        var template = _.template($("#table-row-template").html());
-        var html = template(data);
-        this.$el.html(html);
-
+      ui: {
+        div: "div"
+      },
+      onRender: function(){
         if(this.model.get("isSelected") == true) {
-          this.$el.find("div").css("background-color", "33CC99");
+          this.ui.div.css("background-color", "33CC99");
         }
-
-        return this;
+      },
+      modelChanged: function() {
+        this.render();
+        this.trigger('calculateTotalPrice');
       },
       mouseEntered: function() {
         if(this.model.get("isSelected") == false)
-          this.$el.find("div").css("background-color", "ACC4E6");
+          this.ui.div.css("background-color", "ACC4E6");
       },
       mouseleft: function() {
         if(this.model.get("isSelected") == false)
-          this.$el.find("div").css("background-color", "white");
+          this.ui.div.css("background-color", "white");
       },
       clicked: function(e) {
         //prevent the default click behavior
@@ -101,36 +101,30 @@ table tr {
       })
       ]);
 
-      var AppModel = Backbone.Model.extend({
-        default:{
-          total:0
+      var tableView = Marionette.CollectionView.extend({
+        tagName:'table',
+        childView: storeItemView,
+        onRender: function(){
+          $("#tableid").append(this.el);
+        },
+        childEvents: {
+          calculateTotalPrice: function() {
+            var totalPrice = 0;
+            listOfStoreItems.each(function(model){
+              var isSelected = model.get("isSelected");
+              if(isSelected === true)
+                totalPrice += model.get("price");
+              });
+            $("#totalPrice").html(totalPrice);
+          }
         }
       });
 
-      var App = Backbone.View.extend({
-        render: function() {
-          var table = $("#table");
-          listOfStoreItems.each(function(model) {
-            var view = new storeItemView({
-              model: model
-            });
-            table.append(view.render().el);
-            this.listenTo(model, 'change', this.calculatePrice);
-          }, this);
-        },
-        calculatePrice: function() {
-          var totalPrice = 0;
-          listOfStoreItems.each(function(model){
-            var isSelected = model.get("isSelected");
-            if(isSelected === true)
-              totalPrice += model.get("price");
-            }, this);
-            this.model.set("total", totalPrice);
-            $("#totalPrice").html(this.model.get("total"));
-          }
+      var table = new tableView({
+        collection: listOfStoreItems,
       });
 
-      new App({model: new AppModel({total: 0})}).render();
+      table.render();
     });
   </script>
 </body>
