@@ -27,15 +27,20 @@ table tr {
     var storeItemModel = Backbone.Model.extend({
       default: {
         name: "default",
-        price: 0.0
+        price: 0.0,
+        isSelected: false
       }
     });
 
     var storeItemView = Backbone.View.extend({
       tagName: 'tr',
+      initialize: function() {
+        this.listenTo(this.model, 'change', this.render);
+      },
       events: {
         'mouseenter': 'mouseEntered',
-        'mouseleave': 'mouseleft'
+        'mouseleave': 'mouseleft',
+        'click': 'clicked'
       },
       render: function() {
         //Remember, the <tr> is already included
@@ -45,13 +50,26 @@ table tr {
         this.model.get('price') +
         "</div></td>");
 
+        if(this.model.get("isSelected") == true) {
+          this.$el.find("div").css("background-color", "33CC99");
+        }
+
         return this;
       },
       mouseEntered: function() {
-        this.$el.find("div").css("background-color", "ACC4E6");
+        if(this.model.get("isSelected") == false)
+          this.$el.find("div").css("background-color", "ACC4E6");
       },
       mouseleft: function() {
-        this.$el.find("div").css("background-color", "white");
+        if(this.model.get("isSelected") == false)
+          this.$el.find("div").css("background-color", "white");
+      },
+      clicked: function(e) {
+        //prevent the default click behavior
+        e.preventDefault();
+        var isSelected = this.model.get("isSelected");
+        isSelected = this.model.get("isSelected") === false ? true : false;
+        this.model.set("isSelected", isSelected);
       }
     });
 
@@ -62,11 +80,13 @@ table tr {
     var listOfStoreItems = new storeItemCollection([
       new storeItemModel({
         name: "towels",
-        price: 10.99
+        price: 10.99,
+        isSelected: false
       }),
       new storeItemModel({
         name: "toys",
-        price: 7.99
+        price: 7.99,
+        isSelected: false
       })
       ]);
 
