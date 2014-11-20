@@ -32,10 +32,25 @@ table tr {
     });
 
     var storeItemView = Backbone.View.extend({
+      tagName: 'tr',
+      events: {
+        'mouseenter': 'mouseEntered',
+        'mouseleave': 'mouseleft'
+      },
       render: function() {
-        return "<tr><td>" +
+        //Remember, the <tr> is already included
+        //because we specified 'tr' in tagName
+        this.$el.html("<td><div>" +
         this.model.get('name') +
-        "</td></tr>";
+        "</div></td>");
+
+        return this;
+      },
+      mouseEntered: function() {
+        this.$el.find("div").css("background-color", "ACC4E6");
+      },
+      mouseleft: function() {
+        this.$el.find("div").css("background-color", "white");
       }
     });
 
@@ -61,7 +76,7 @@ table tr {
             var view = new storeItemView({
               model: model
             });
-            table.append(view.render());
+            table.append(view.render().el);
           }, this);
         }
       });
