@@ -17,6 +17,15 @@ table tr {
 </head>
 
 <body>
+  <script id="table-row-template" type="text/template">
+    <td>
+      <div>
+        <%= name %><br>
+        <%= price %>
+      </div>
+    </td>
+  </script>
+  </script>
   <table id="table">
   </table>
   <br>
@@ -47,10 +56,10 @@ table tr {
       render: function() {
         //Remember, the <tr> is already included
         //because we specified 'tr' in tagName
-        this.$el.html("<td><div>" +
-        this.model.get('name') + "<br>" +
-        this.model.get('price') +
-        "</div></td>");
+        var data = {name: this.model.get('name'), price: this.model.get('price')};
+        var template = _.template($("#table-row-template").html());
+        var html = template(data);
+        this.$el.html(html);
 
         if(this.model.get("isSelected") == true) {
           this.$el.find("div").css("background-color", "33CC99");
